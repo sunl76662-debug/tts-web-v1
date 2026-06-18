@@ -5,31 +5,7 @@ export interface Voice {
 }
 
 // TTS 任务状态（MiniMax 异步模式）
-export type TaskStatus =
-  | 'pending'
-  | 'processing'
-  | 'downloading'
-  | 'success'
-  | 'failed';
-
-// TTS 任务
-export interface Task {
-  id: string;
-  title: string;
-  text: string;
-  text_length: number;
-  voice_id: string;
-  speed: number;
-  model: string;
-  status: TaskStatus;
-  task_id: string | null;
-  audio_filename: string | null;
-  audio_duration: number | null;
-  audio_size: number | null;
-  error_message: string | null;
-  created_at: string;
-  updated_at: string;
-}
+export type TaskStatus = 'pending' | 'processing' | 'success' | 'failed';
 
 // 创建 TTS 任务请求
 export interface CreateTtsRequest {

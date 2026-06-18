@@ -2,7 +2,6 @@ import { cookies } from 'next/headers';
 import crypto from 'crypto';
 
 const COOKIE_NAME = 'auth_token';
-const COOKIE_VALUE = 'authenticated';
 
 // 获取访问密码
 function getAccessPassword(): string {
@@ -11,6 +10,13 @@ function getAccessPassword(): string {
     throw new Error('ACCESS_PASSWORD 未配置');
   }
   return password;
+}
+
+function getCookieValue(): string {
+  return crypto
+    .createHash('sha256')
+    .update(`tts-auth:${getAccessPassword()}`)
+    .digest('hex');
 }
 
 // Timing-safe 密码比较
@@ -34,7 +40,7 @@ export async function verifyPassword(password: string): Promise<boolean> {
 // 设置认证 cookie
 export async function setAuthCookie(): Promise<void> {
   const cookieStore = await cookies();
-  cookieStore.set(COOKIE_NAME, COOKIE_VALUE, {
+  cookieStore.set(COOKIE_NAME, getCookieValue(), {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
@@ -46,8 +52,9 @@ export async function setAuthCookie(): Promise<void> {
 // 检查是否已认证
 export async function isAuthenticated(): Promise<boolean> {
   const cookieStore = await cookies();
-  const authCookie = cookieStore.get(COOKIE_NAME);
-  return authCookie?.value === COOKIE_VALUE;
+  const authCookie = cookieStore.get(COOKIE_NAME)?.value;
+  if (!authCookie) return false;
+  return comparePassword(authCookie, getCookieValue());
 }
 
 // 清除认证 cookie
